@@ -1,0 +1,123 @@
+const firebaseConfig = {
+  apiKey: 'AIzaSyCmPnEY9OePRBk1u7xDYn83axkzSMxsRh0',
+  authDomain: 'quri-social.firebaseapp.com',
+  projectId: 'quri-social',
+  storageBucket: 'quri-social.appspot.com',
+  messagingSenderId: '245930439182',
+  appId: '1:245930439182:web:39239e04efbad7e26d425f',
+};
+const firebaseAppCheckConfig = {
+  siteKey: '6Ld4Pn0gAAAAAJ79IV4xCw-XKDvWNFCkh_UVwr2W',
+};
+
+const firebaseApp = firebase.initializeApp(firebaseConfig);
+initializeAppCheck(firebaseApp, {
+  provider: new ReCaptchaV3Provider(firebaseAppCheckConfig.siteKey),
+
+  // Optional argument. If true, the SDK automatically refreshes App Check
+  // tokens as needed.
+  isTokenAutoRefreshEnabled: true,
+});
+
+/**
+ * initApp handles setting up the Firebase context and registering
+ * callbacks for the auth status.
+ *
+ * The core initialization is in firebase.App - this is the glue class
+ * which stores configuration. We provide an app name here to allow
+ * distinguishing multiple app instances.
+ *
+ * This method also registers a listener with firebase.auth().onAuthStateChanged.
+ * This listener is called when the user is signed in or out, and that
+ * is where we update the UI.
+ *
+ * When signed in, we also authenticate to the Firebase Realtime Database.
+ */
+function initApp() {
+  // Listen for auth state changes.
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+      // User is signed in.
+      var displayName = user.displayName;
+      var email = user.email;
+      var emailVerified = user.emailVerified;
+      var photoURL = user.photoURL;
+      var isAnonymous = user.isAnonymous;
+      var uid = user.uid;
+      var providerData = user.providerData;
+      document.getElementById('quickstart-button').textContent = 'Sign out';
+      document.getElementById('quickstart-sign-in-status').textContent = 'Signed in';
+      document.getElementById('quickstart-account-details').textContent = JSON.stringify(user, null, '  ');
+    } else {
+      // Let's try to get a Google auth token programmatically.
+      document.getElementById('quickstart-button').textContent = 'Sign-in with Google';
+      document.getElementById('quickstart-sign-in-status').textContent = 'Signed out';
+      document.getElementById('quickstart-account-details').textContent = 'null';
+    }
+    document.getElementById('quickstart-button').disabled = false;
+  });
+
+  document.getElementById('quickstart-button').addEventListener('click', startSignIn, false);
+}
+
+/**
+ * Start the auth flow and authorizes to Firebase.
+ * @param{boolean} interactive True if the OAuth flow should request with an interactive mode.
+ */
+function startAuth(interactive) {
+  // Request an OAuth token from the Chrome Identity API.
+  chrome.identity.getAuthToken({interactive: !!interactive}, function(token) {
+    if (chrome.runtime.lastError && !interactive) {
+      console.log('It was not possible to get a token programmatically.');
+    } else if(chrome.runtime.lastError) {
+      console.error(chrome.runtime.lastError);
+    } else if (token) {
+      // Authorize Firebase with the OAuth Access Token.
+      var credential = firebase.auth.GoogleAuthProvider.credential(null, token);
+      firebase.auth().signInWithCredential(credential).catch(function(error) {
+        // The OAuth token might have been invalidated. Lets' remove it from cache.
+        if (error.code === 'auth/invalid-credential') {
+          chrome.identity.removeCachedAuthToken({token: token}, function() {
+            startAuth(interactive);
+          });
+        }
+      });
+    } else {
+      console.error('The OAuth Token was null');
+    }
+  });
+}
+
+/**
+ * Starts the sign-in process.
+ */
+function startSignIn() {
+  document.getElementById('quickstart-button').disabled = true;
+  if (firebase.auth().currentUser) {
+    firebase.auth().signOut();
+  } else {
+    startAuth(true);
+  }
+}
+
+function getCurrentUrl() {
+  chrome.tabs.query({
+      active: true,
+      //currentWindow: true,
+      lastFocusedWindow: true
+  }, function([activeTab]) {
+      console.log(activeTab);
+      const activeTabId = activeTab.id;
+      alert(activeTab.url);
+  });
+}
+
+window.onload = function() {
+  initApp();
+};
+chrome.tabs.query({
+  active: true,
+  currentWindow: true
+}, ([currentTab]) => {
+  console.log(currentTab.id);
+});

@@ -1,0 +1,33 @@
+{
+    "name": "qURI",
+    "version": "1.0.0",
+    "description": "qURI rankings",
+    "manifest_version": 3,
+    "author": "Jessica Mulein",
+    "icons": {
+      "128": "firebase.png"
+    },
+    "browser_action":{
+      "default_icon": "firebase.png",
+      "default_popup": "credentials.html",
+      "default_title": "qURI"
+    },
+    "background": {
+      "page": "background.html",
+      "service_worker": "background.js"
+    },
+    "permissions": [
+      "contextMenus",
+      "identity",
+      "tabs"
+    ],
+    "content_security_policy":"script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'",
+    "oauth2": {
+      "client_id": "325213883233-4samcigfgdicsacn907gnu7l10gclh8g.apps.googleusercontent.com",
+      "scopes":[
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile"
+      ]
+    },
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw4Y4k8c2Nhp86A4mYvfxvD+y1wo2WnEKwMdY+WcbhIX12DaWRjBvRvZSszTUkADKaWQLCly8whH+lYIeBV2kNc+GG7hmWkAK5bvw1dBsCn7VYyG7m/yY+KwWhX+bcS00buDm6TnGsxOluhx6XwDef+wGJaKtuRJzZk4NyFN3/uhAl9iblVCj+USCGUFhav/ecndzZdVD9EAl4tOv+a0W7GftlipnYLl4Crer2qQQB1OHhQt4Ny3SbxpQDpyqNIga225wSjOl2rcQzIB6eTYUyEMZp5sLjCeZfSQv41i7DHmRlzA0fxtIUGDwy28NeEtQblf6LXDnONVaw2BRgIDZ8wIDAQAB"
+}
